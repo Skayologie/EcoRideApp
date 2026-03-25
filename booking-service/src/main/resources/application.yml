@@ -1,0 +1,58 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: booking-service
+  datasource:
+    url: jdbc:h2:mem:bookingdb
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+  kafka:
+    bootstrap-servers: localhost:9092
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/edoride
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,refresh
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      rideService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+  retry:
+    instances:
+      rideService:
+        max-attempts: 3
+        wait-duration: 1000
+  ratelimiter:
+    instances:
+      default:
+        limit-for-period: 10
+        limit-refresh-period: 1s
